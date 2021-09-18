@@ -1,8 +1,9 @@
-import Search_bar from "./components/search_bar";
+import Dashboard from "./components/dashboard";
+import React from "react";
 function App() {
   return (
-    <div>
-      <Search_bar />
+    <div id="outer">
+      <Dashboard />
     </div>
   );
 }

@@ -1,41 +1,23 @@
 import React from "react";
-
-export default class Search_bar extends React.Component {
-  defaultState = {
-    search_query: "",
-  };
-  state = {
-    ...this.defaultState,
-  };
-
-  handleSubmit = (event) => {
-    event.preventDefault();
-    let body = { search_query: this.state.search_query };
-    fetch("http://99.235.37.139:8000/api/search", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then(() => this.setState({ ...this.defaultState }));
-  };
-
-  handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
+import { TextField, Button } from "@material-ui/core";
+import SendIcon from "@mui/icons-material/Send";
+import Stack from "@mui/material/Stack";
+export default class SearchBar extends React.Component {
   render() {
     return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            value={this.state.search_query}
+      <form onSubmit={(event) => this.props.handleSubmit(event)}>
+        <Stack direction="row" spacing={2} id="inner">
+          <TextField
+            value={this.props.search_query}
             name="search_query"
-            onChange={this.handleChange}
-          ></input>
-          <button type="submit">submit</button>
-        </form>
-      </div>
+            onChange={(event) => this.props.handleChange(event)}
+            variant="filled"
+          ></TextField>
+          <Button type="submit" variant="contained" endIcon={<SendIcon />}>
+            submit
+          </Button>
+        </Stack>
+      </form>
     );
   }
 }
