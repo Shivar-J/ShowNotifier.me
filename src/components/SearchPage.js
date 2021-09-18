@@ -1,8 +1,7 @@
 import SearchBar from "./search_bar";
 import React from "react";
-import Box from "@material-ui/core/Box";
 
-export default class Dashboard extends React.Component {
+export default class SearchPage extends React.Component {
   defaultState = {
     search_query: "",
     search_data: [],
