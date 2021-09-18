@@ -1,1 +1,1 @@
-{"type":"module","dependencies":{"cors":"^2.8.5","express":"^4.17.1","node-fetch":"^3.0.0"}}
+{"type":"module","dependencies":{"cors":"^2.8.5","express":"^4.17.1","node-fetch":"^3.0.0","pg":"^8.7.1","pg-cursor":"^2.7.1"}}
