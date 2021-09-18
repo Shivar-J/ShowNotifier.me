@@ -22,11 +22,15 @@ export default class Dashboard extends React.Component {
       },
     });
     this.setState({ ...this.defaultState });
-    let search_data = await response.json();
-    if (search_data["Search"] == null) {
-      return;
+    if (response.ok) {
+      let search_data = await response.json();
+      if (search_data["Search"] == null) {
+        return;
+      } else {
+        this.setState({ search_data: search_data["Search"] });
+      }
     } else {
-      this.setState({ search_data: search_data["Search"] });
+      alert("no show/movie exists with this name");
     }
   };
 
@@ -44,7 +48,6 @@ export default class Dashboard extends React.Component {
         />
         <div className="grid">
           {this.state.search_data.map((element) => {
-            console.log(element["Poster"]);
             return (
               <div key={element["imdbID"]} id="inner">
                 <img src={element["Poster"]} alt={element["Title"]} />
