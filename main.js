@@ -1,10 +1,10 @@
-import fetch from 'node-fetch'
+import fetch, { isRedirect } from 'node-fetch'
 import express from 'express'
 import postgres from 'pg'
+import bcrypt from 'bcrypt'
 
-const{Client, Pool} = postgres;
+const{Client} = postgres;
 const app = express();
-const pool = new Pool();
 const client = new Client({
     host: 'localhost',
     user: 'postgres',
@@ -12,25 +12,105 @@ const client = new Client({
     password: 'password1234',
     database: 'postgres'
 });
-
-//await client.connect();
+var title;
+var year;
+var imdbID;
+var type;
+var poster;
 
 app.listen(8000, '0.0.0.0', () => console.log('listening on port 8000'));
 app.use(express.static('public'));
 app.use(express.json());
-
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
+app.disable('etag');
+
+await client.connect();
+
+
+app.post('/api/login', async (req, res) => {
+    const body = req.body;
+
+    if(body.type == "signup"){
+        if(!(body.username && body.password)) {
+            return res.sendStatus(400);
+        }
+        
+        const salt = await bcrypt.genSalt(10);
+        var userPassword = body.password;
+        var userUsername = body.username;
+
+        console.log("Username: ", userUsername);
+        console.log("Password: ", userPassword);
+
+        userPassword = await bcrypt.hash(userPassword, salt);
+        
+        const checkExisting = 'SELECT * FROM userdata WHERE username=$1';
+        const valuesExisting = [body.username];
+        var usernameData = await client.query(checkExisting, valuesExisting);
+
+        if(usernameData.rows.length == 0){
+            const text = 'INSERT INTO "userdata"(\"username\",\"password\") VALUES($1,$2)';
+            const values = [body.username, userPassword];
+
+            client.query(text, values, (err, res) => {
+                console.log(err,res);
+            });
+            res.status(200);
+            res.send(body.username);
+            return;
+        }
+        else{
+            res.sendStatus(409);
+            return;
+        }
+    }
+    else if(body.type == "login"){
+        const checkUsers = 'SELECT * FROM userdata WHERE username=$1';
+        console.log("BODY DATA");
+        console.log(body);
+        const valuesCheck = [body.username];
+        var usernameChecks = await client.query(checkUsers, valuesCheck);
+        console.log("USER DATA");
+        console.log(usernameChecks.rows.length);
+        if(usernameChecks.rows.length == 1){
+            const checkPassword = 'SELECT password FROM userdata WHERE username=$1';
+            const checkPasswordValue = [body.username];
+            var passwordCompare = await client.query(checkPassword, checkPasswordValue);
+            console.log("PASSWORD DATA");
+            console.log(passwordCompare.rows);
+            const validPassword = bcrypt.compare(passwordCompare.rows[0].password, body.password);
+            if(validPassword){
+                res.status(200);
+                res.send(body.username);
+                return;
+            }
+            else {
+                res.sendStatus(400);
+                return;
+            }
+        }
+        else{
+            res.sendStatus(401);
+            return;
+        }
+    }
+    else{
+        res.sendStatus(404);
+        return;
+    }
+});
+
 app.post('/api/search', async(request, response) => {
     //console.log(request.body);
     //console.log(request.body);
     const data = request.body.search_query;
     console.log(data);
-    let searchData = await fetch('http://www.omdbapi.com/?apikey=6d04333e&s=' + request.body.search_query);
+    let searchData = await fetch('http://www.omdbapi.com/?apikey=6d04333e&s=' + request.body.search_query + '&page=1');
     var obj = await searchData.json();
     if(searchData == null || obj["Search"] == null || obj["Search"].length == 0){
         response.sendStatus(404);
@@ -41,14 +121,18 @@ app.post('/api/search', async(request, response) => {
         //console.log(obj["Search"]);
         obj["Search"].forEach(Element => {
             console.log(Element["Year"]);
+            title = Element["Title"];
+            year = Element["Year"];
+            imdbID = Element["imdbID"];
+            type = Element["Type"];
+            poster = Element["Poster"];
+
+            const text = 'INSERT INTO "tv"(\"Title\",\"Year\",\"imdbID\",\"Type\",\"Poster\") VALUES($1,$2,$3,$4,$5)';
+            const values = [title, year, imdbID, type, poster];
+
+            client.query(text, values, (err, res) => {
+                console.log(err,res);
+            });
         })
     }
 });
-
-/*const text = 'INSERT INTO Shows/Movies(Title,Year,imdbID,Type,Poster) VALUES($1,$2,$3,$4,$5)';
-const values = [obj.Title, obj.Year, obj.imdbID, obj.Type, obj.Poster];
-
-client.query(text, values, (err, res) => {
-    console.log(err,res);
-    client.end();
-});*/
