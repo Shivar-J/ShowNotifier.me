@@ -4,11 +4,11 @@ import SignupPage from "./components/signup_page";
 import LoginPage from "./components/login_page";
 import { Switch, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
-import SearchAppBar from "./components/header";
+import PrimarySearchAppBar from "./components/header";
 function App() {
   return (
     <div>
-      <SearchAppBar />
+      <PrimarySearchAppBar />
       <BrowserRouter id="outer">
         <Switch>
           <Route path="/signup" exact component={SignupPage} />

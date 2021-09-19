@@ -43,13 +43,11 @@ export default class SearchPage extends React.Component {
   adjustWatchList(action, element) {
     let searchCopy = [...this.state.search_data];
     searchCopy.forEach((x) => {
-      if (x["Title"] == element["Title"]) {
+      if (x["imdbID"] == element["imdbID"]) {
         x["watchList"] = action;
       }
     });
     this.setState({ search_data: searchCopy });
-    console.log(element["Title"]);
-    console.log(action);
   }
   render() {
     return (

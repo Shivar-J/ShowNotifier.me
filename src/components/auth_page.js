@@ -37,7 +37,7 @@ export default class AuthPage extends React.Component {
       type: this.props.type,
     };
     this.setState({ loading: true });
-    await fetch("http://99.235.37.139:8000/login", {
+    await fetch("http://99.235.37.139:8000/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
