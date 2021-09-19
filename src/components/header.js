@@ -88,6 +88,7 @@ export default class PrimarySearchAppBar extends React.Component {
     setCookieValue("tv", JSON.stringify(this.state.search_data), 1800);
 
     this.setState({ redirect: "/search" });
+    window.location.reload(false);
   };
 
   handleChange = (event) => {
