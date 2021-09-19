@@ -1,9 +1,10 @@
 import React from "react";
+import Header from "./header";
 import { Redirect } from "react-router-dom";
 import Form from "./Form";
+import { setCookieValue, getCookieValue } from "./Utility";
 import { CircularProgress } from "@material-ui/core";
-import SearchBar from "./header";
-import "../bootstrap.css";
+import { backendAddress, userLoggedIn } from "./Utility";
 function hasWhiteSpace(s) {
   return /\s/g.test(s);
 }
@@ -16,12 +17,19 @@ export default class AuthPage extends React.Component {
     loading: false,
   };
   state = { ...this.Defaultstate };
+  componentDidMount() {
+    if (userLoggedIn()) {
+      console.log("user logged in redirecting to dashboard");
+      this.setState({ redirect: "/Dashboard" });
+    }
+  }
   change = (event) => {
     this.setState({ error: "" });
     this.setState({ [event.target.name]: event.target.value });
   };
   onSubmit = async (event) => {
     event.preventDefault();
+    console.log(this.state);
     if (!this.state.username || !this.state.password) {
       this.setState({ error: "Please fill out all the fields" });
       return;
@@ -36,22 +44,32 @@ export default class AuthPage extends React.Component {
       type: this.props.type,
     };
     this.setState({ loading: true });
-    await fetch("http://99.235.37.139:8000/api/login", {
+    await fetch(`${backendAddress}/authenticateUser`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     })
-      .then(() => {
-        this.setState({ redirect: "/dashboard" });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data["status"] == false || !data["session-key"]) {
+          this.setState({ error: this.props.error });
+          return;
+        } else {
+          setCookieValue("session-key", data["session-key"], 86400 * 40);
+          console.log("succesfully logged user in, redirecting to dashboard");
+          this.setState({ redirect: "/Dashboard" });
+          return;
+        }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error(error);
         this.setState({
-          error: this.props.error,
+          error: "Network Error: server is down or client lost connection",
         });
       });
-
     this.setState({ loading: false });
   };
   render() {
@@ -60,7 +78,7 @@ export default class AuthPage extends React.Component {
     } else if (this.state.loading) {
       return (
         <div>
-          {/* <Header/> */}
+          <Header />
           <CircularProgress className="centered" />
         </div>
       );
@@ -81,7 +99,7 @@ export default class AuthPage extends React.Component {
       }
       return (
         <div>
-          {/* <Header/> */}
+          <Header />
           <Form
             onSubmit={this.onSubmit}
             change={this.change}

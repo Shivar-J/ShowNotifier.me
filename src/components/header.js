@@ -6,15 +6,10 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
-import Badge from "@mui/material/Badge";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-
+import { processSearchData, setCookieValue } from "./utils";
+import { Redirect } from "react-router";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -56,13 +51,43 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default class PrimarySearchAppBar extends React.Component {
-  state = {
+  defaultState = {
     "Search...": "",
+    search_data: null,
+    redirect: null,
   };
 
-  handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log(event.target.value);
+  state = {
+    ...this.defaultState,
+  };
+
+  handleSubmit = async () => {
+    let searchInput = this.state["Search..."];
+    let body = { search_query: searchInput };
+    let response = await fetch("http://99.235.37.139:8000/api/search", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    this.setState({ ...this.defaultState });
+    if (response.ok) {
+      let search_data = await response.json();
+      if (search_data["Search"] == null) {
+        return;
+      } else {
+        this.setState({
+          search_data: processSearchData(search_data["Search"]),
+        });
+      }
+    } else {
+      alert("no show/movie exists with this name");
+    }
+
+    setCookieValue("tv", JSON.stringify(this.state.search_data), 1800);
+
+    this.setState({ redirect: "/search" });
   };
 
   handleChange = (event) => {
@@ -71,6 +96,7 @@ export default class PrimarySearchAppBar extends React.Component {
   render() {
     return (
       <Box sx={{ flexGrow: 1 }}>
+        {this.state.redirect ? <Redirect to={this.state.redirect} /> : null}
         <AppBar position="static">
           <Toolbar>
             <IconButton
@@ -88,18 +114,20 @@ export default class PrimarySearchAppBar extends React.Component {
               component="div"
               sx={{ display: { xs: "none", sm: "block" } }}
             >
-              MUI
+              ShowTracker.me
             </Typography>
             <Search>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
               <StyledInputBase
+                value={this.state["Search..."]}
                 onChange={this.handleChange}
                 name="Search..."
                 placeholder="Search…"
                 inputProps={{ "aria-label": "search" }}
               />
+              <button onClick={this.handleSubmit}>submit</button>
             </Search>
             <Box sx={{ flexGrow: 1 }} />
           </Toolbar>
