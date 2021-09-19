@@ -1,6 +1,7 @@
 import SearchBar from "./search_bar";
 import React from "react";
-
+import Checkbox from "@mui/material/Checkbox";
+import { processSearchData } from "./utils";
 export default class SearchPage extends React.Component {
   defaultState = {
     search_query: "",
@@ -26,7 +27,9 @@ export default class SearchPage extends React.Component {
       if (search_data["Search"] == null) {
         return;
       } else {
-        this.setState({ search_data: search_data["Search"] });
+        this.setState({
+          search_data: processSearchData(search_data["Search"]),
+        });
       }
     } else {
       alert("no show/movie exists with this name");
@@ -37,6 +40,17 @@ export default class SearchPage extends React.Component {
     this.setState({ [event.target.name]: event.target.value });
   };
 
+  adjustWatchList(action, element) {
+    let searchCopy = [...this.state.search_data];
+    searchCopy.forEach((x) => {
+      if (x["Title"] == element["Title"]) {
+        x["watchList"] = action;
+      }
+    });
+    this.setState({ search_data: searchCopy });
+    console.log(element["Title"]);
+    console.log(action);
+  }
   render() {
     return (
       <div>
@@ -50,7 +64,13 @@ export default class SearchPage extends React.Component {
             return (
               <div key={element["imdbID"]} id="inner">
                 <img src={element["Poster"]} alt={element["Title"]} />
-                <p>{element["Title"]}</p>
+                <Checkbox
+                  checked={element["watchList"]}
+                  onChange={() =>
+                    this.adjustWatchList(!element["watchList"], element)
+                  }
+                  inputProps={{ "aria-label": element["Title"] }}
+                />
               </div>
             );
           })}
