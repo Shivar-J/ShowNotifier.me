@@ -6,12 +6,14 @@ import { Switch, Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import PrimarySearchAppBar from "./components/header";
 import Dashboard from "./components/dashboard";
+import HomePage from "./components/HOME_PAGE";
 function App() {
   return (
     <div>
       <BrowserRouter id="outer">
         <PrimarySearchAppBar />
         <Switch>
+          <Route path="/" exact component={HomePage} />
           <Route path="/signup" exact component={SignupPage} />
           <Route path="/search" exact component={SearchPage} />
           <Route path="/login" exact component={LoginPage} />

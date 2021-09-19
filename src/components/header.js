@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@material-ui/core";
 import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -131,6 +132,9 @@ export default class PrimarySearchAppBar extends React.Component {
               <button onClick={this.handleSubmit}>submit</button>
             </Search>
             <Box sx={{ flexGrow: 1 }} />
+            <Button color="inherit" href="dashboard">
+              Dashboard
+            </Button>
           </Toolbar>
         </AppBar>
       </Box>

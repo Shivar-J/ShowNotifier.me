@@ -1,6 +1,7 @@
 import React from "react";
 import { getCookieValue } from "./utils";
 import MediaCard from "./complex_card";
+import { Redirect } from "react-router";
 export default class Dashboard extends React.Component {
   state = {
     dashboard_data: [],
@@ -9,7 +10,7 @@ export default class Dashboard extends React.Component {
 
   async componentDidMount() {
     if (!getCookieValue("session")) {
-      this.setState({ redirect: "/" });
+      this.setState({ redirect: "/login" });
       return;
     }
 
@@ -50,7 +51,9 @@ export default class Dashboard extends React.Component {
   }
 
   render() {
-    if (this.state.dashboard_data[0]) {
+    if (this.state.redirect) {
+      return <Redirect to={this.state.redirect} />;
+    } else {
       return (
         <div className="grid2">
           {this.state.dashboard_data.map((element) => {
@@ -62,8 +65,6 @@ export default class Dashboard extends React.Component {
           })}
         </div>
       );
-    } else {
-      return <div></div>;
     }
   }
 }
