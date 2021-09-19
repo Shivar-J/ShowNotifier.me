@@ -5,11 +5,19 @@ export default class SearchPage extends React.Component {
   state = {
     search_data: [],
   };
-  componentDidMount() {
+  async componentDidMount() {
     this.setState({ search_data: JSON.parse(getCookieValue("tv")) });
     console.log(getCookieValue("tv"));
+    let body = { username: getCookieValue("session") };
+    console.log(body);
+    let response = await fetch("http://99.235.37.139:8000/api/getWatchList", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    console.log(await response.json());
   }
-  adjustWatchList(action, element) {
+  async adjustWatchList(action, element) {
     let searchCopy = [...this.state.search_data];
     searchCopy.forEach((x) => {
       if (x["imdbID"] == element["imdbID"]) {
@@ -17,6 +25,26 @@ export default class SearchPage extends React.Component {
       }
     });
     this.setState({ search_data: searchCopy });
+
+    if (!getCookieValue("session")) {
+      alert("not logged in, please login");
+      return;
+    } else {
+      let body = {
+        username: getCookieValue("session"),
+        imdbID: element["imdbID"],
+        type: action ? "add" : "remove",
+      };
+      let response = await fetch("http://99.235.37.139:8000/api/setWatchList", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        alert(
+          "connection error, try logging out and back in or retrying later"
+        );
+      }
+    }
   }
   render() {
     return (

@@ -1,9 +1,8 @@
 import React from "react";
 import { Redirect } from "react-router-dom";
 import Form from "./Form";
-import { CircularProgress } from "@material-ui/core";
-import SearchBar from "./header";
 import "../bootstrap.css";
+import { setCookieValue } from "./utils";
 function hasWhiteSpace(s) {
   return /\s/g.test(s);
 }
@@ -13,7 +12,6 @@ export default class AuthPage extends React.Component {
     password: "",
     error: "",
     redirect: null,
-    loading: false,
   };
   state = { ...this.Defaultstate };
   change = (event) => {
@@ -35,35 +33,28 @@ export default class AuthPage extends React.Component {
       password: this.state.password,
       type: this.props.type,
     };
-    this.setState({ loading: true });
-    await fetch("http://99.235.37.139:8000/api/login", {
+    let login_response = await fetch("http://99.235.37.139:8000/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then(() => {
-        this.setState({ redirect: "/dashboard" });
-      })
-      .catch(() => {
-        this.setState({
-          error: this.props.error,
-        });
-      });
+    });
 
-    this.setState({ loading: false });
+    if (login_response.ok) {
+      login_response.text().then((session) => {
+        setCookieValue("session", session, 604800);
+      });
+      this.setState({ redirect: "/dashboard" });
+    } else {
+      this.setState({
+        error: this.props.error,
+      });
+    }
   };
   render() {
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />;
-    } else if (this.state.loading) {
-      return (
-        <div>
-          {/* <Header/> */}
-          <CircularProgress className="centered" />
-        </div>
-      );
     } else {
       let text;
       if (this.props.type === "login") {
