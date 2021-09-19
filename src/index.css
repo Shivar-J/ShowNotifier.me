@@ -26,6 +26,11 @@ code {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
 div > div {
   padding: 10px;
 }
