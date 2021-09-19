@@ -1,5 +1,5 @@
 import fetch, { isRedirect } from 'node-fetch'
-import express from 'express'
+import express, { response } from 'express'
 import postgres from 'pg'
 import bcrypt from 'bcrypt'
 
@@ -27,7 +27,6 @@ app.use((req, res, next) => {
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
-app.disable('etag');
 
 await client.connect();
 
@@ -103,6 +102,55 @@ app.post('/api/login', async (req, res) => {
         res.sendStatus(404);
         return;
     }
+});
+
+app.post('/api/getWatchList', async(request, response) => {
+    const body = request.body;
+
+    const checkWatchlist = 'SELECT \"showID\" FROM \"userList\" WHERE \"userName\"=$1';
+    const checkWatchlistUsername = [body.username];
+    //console.log(checkWatchlist);
+    //console.log(checkWatchlistUsername);
+    //console.log(body.username);
+    var getWatchlist = await client.query(checkWatchlist, checkWatchlistUsername);
+    //console.log(getWatchlist.rows);
+    response.status(200);
+    response.send(getWatchlist.rows);
+});
+
+app.post('/api/setWatchList', async(request, response) => {
+    const body = request.body;
+
+    if(body.type == "add"){
+        const text = 'INSERT INTO "userList"(\"userName\",\"showID\") VALUES($1,$2)';
+        const values = [body.username, body.imdbID];
+        var setWatchList = await client.query(text, values);
+        response.status(200);
+        response.send(setWatchList);
+    }
+    else if(body.type == "remove"){
+        const text = 'DELETE FROM \"userList\" WHERE \"userName\" = $1 AND \"showID\" = $2';
+        const values = [body.username, body.imdbID];
+        var removeWatchList = await client.query(text, values);
+        response.status(200);
+        response.send(removeWatchList);
+    }
+});
+
+app.post('/api/dashboard', async(request, response) =>{
+    const body = request.body;
+    
+    var objectDashboard = [];
+
+    for(let i in body.ids){
+        let searchData = await fetch('http://www.omdbapi.com/?apikey=6d04333e&i=' + body.ids[i].showID);
+        searchData = await searchData.json();
+        objectDashboard.push(searchData);
+    }
+
+    console.log(objectDashboard);
+    response.status(200);
+    response.send(objectDashboard);
 });
 
 app.post('/api/search', async(request, response) => {
