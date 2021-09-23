@@ -12,6 +12,13 @@ code {
     monospace;
 }
 
+.center{
+  margin: auto;
+  width: 60%;
+  padding: 10px;
+  border-radius: 10px;
+}
+
 #inner {
   display: table;
   margin: 0 auto;
@@ -145,4 +152,9 @@ div > div {
   top: 10vh;
   padding: 20px 40px;
   font-size: 35px;
+}
+
+.App {
+  font-family: sans-serif;
+  text-align: center;
 }

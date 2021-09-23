@@ -1,12 +1,15 @@
 import React from "react";
+import { Button } from "react";
 import { Redirect } from "react-router-dom";
 import Form from "./Form";
 import { CircularProgress } from "@material-ui/core";
 import SearchBar from "./header";
 import "../bootstrap.css";
+
 function hasWhiteSpace(s) {
   return /\s/g.test(s);
 }
+
 export default class AuthPage extends React.Component {
   Defaultstate = {
     username: "",
